@@ -1,103 +1,184 @@
-# ⚠️ Importante!!!
-Você pode escolher qualquer um dos desafios para desenvolver. Sinta-se à vontade para começar pelo desafio que mais lhe interessa.
+#include <stdio.h>
+#include <stdlib.h> // Para a função abs
 
-# Desafio Batalha Naval - Três Níveis de Complexidade
+#define BOARD_SIZE 10   // Tamanho fixo do tabuleiro 10x10
+#define SHIP_SIZE 3     // Tamanho fixo dos navios (3 posições)
+#define SKILL_SIZE 5    // Tamanho fixo das matrizes de habilidades (5x5)
 
-Bem-vindo ao desafio "Batalha Naval"! Este projeto desafiará suas habilidades de programação utilizando vetores e matrizes para simular um jogo de Batalha Naval, dividido em três níveis: Novato, Aventureiro e Mestre. Em cada nível, novas funcionalidades serão adicionadas, tornando o desafio progressivamente mais complexo.
+// Função principal do programa
+int main() {
+    // Declaração e inicialização do tabuleiro como matriz 10x10 com todos os valores 0 (água)
+    int board[BOARD_SIZE][BOARD_SIZE];
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            board[i][j] = 0; // Inicializa cada posição com 0
+        }
+    }
 
-## 🏅 Nível Novato
+    // Posicionamento dos navios: quatro navios de tamanho 3, dois horizontais/verticais e dois diagonais
+    // Cada posicionamento é validado para estar dentro dos limites e sem sobreposição
 
-Neste nível inicial, você implementará a lógica básica de posicionamento de navios em um tabuleiro de Batalha Naval utilizando vetores bidimensionais.
+    // Navio horizontal: linha 1, colunas 0 a 2
+    int hor_r = 1, hor_c = 0;
+    int can_place = 1; // Flag para validar posicionamento
+    for (int k = 0; k < SHIP_SIZE; k++) {
+        if (hor_c + k >= BOARD_SIZE || board[hor_r][hor_c + k] != 0) {
+            can_place = 0; // Invalida se fora dos limites ou ocupado
+            break;
+        }
+    }
+    if (can_place) {
+        for (int k = 0; k < SHIP_SIZE; k++) {
+            board[hor_r][hor_c + k] = 3; // Coloca o navio com valor 3
+        }
+    } // Se não puder colocar, ignora (simplificação)
 
-### 🚩 Objetivos:
-- **Posicionamento dos Navios:** O sistema deve simular a localização de dois navios no tabuleiro, um posicionado verticalmente e outro horizontalmente.
-- **Utilização de Vetores:** Os navios serão posicionados utilizando vetores bidimensionais, com coordenadas X e Y.
-- **Exibição de Coordenadas:** O sistema deve exibir as coordenadas de cada parte dos navios no console utilizando `printf`.
+    // Navio vertical: linhas 3 a 5, coluna 2
+    int ver_r = 3, ver_c = 2;
+    can_place = 1;
+    for (int k = 0; k < SHIP_SIZE; k++) {
+        if (ver_r + k >= BOARD_SIZE || board[ver_r + k][ver_c] != 0) {
+            can_place = 0;
+            break;
+        }
+    }
+    if (can_place) {
+        for (int k = 0; k < SHIP_SIZE; k++) {
+            board[ver_r + k][ver_c] = 3;
+        }
+    }
 
-### 📥 Entrada de Dados:
-- Os valores serão inseridos manualmente por meio de variáveis no código.
+    // Navio diagonal crescente (/): linhas 0 a 2, colunas 7 a 9
+    int diag1_r = 0, diag1_c = 7;
+    can_place = 1;
+    for (int k = 0; k < SHIP_SIZE; k++) {
+        if (diag1_r + k >= BOARD_SIZE || diag1_c + k >= BOARD_SIZE || board[diag1_r + k][diag1_c + k] != 0) {
+            can_place = 0;
+            break;
+        }
+    }
+    if (can_place) {
+        for (int k = 0; k < SHIP_SIZE; k++) {
+            board[diag1_r + k][diag1_c + k] = 3;
+        }
+    }
 
-### 📤 Saída de Dados:
-- Após o posicionamento, o sistema deve exibir as coordenadas dos navios de forma clara e organizada.
+    // Navio diagonal decrescente (\): linhas 0 a 2, colunas 9 a 7
+    int diag2_r = 0, diag2_c = 9;
+    can_place = 1;
+    for (int k = 0; k < SHIP_SIZE; k++) {
+        if (diag2_r + k >= BOARD_SIZE || diag2_c - k < 0 || board[diag2_r + k][diag2_c - k] != 0) {
+            can_place = 0;
+            break;
+        }
+    }
+    if (can_place) {
+        for (int k = 0; k < SHIP_SIZE; k++) {
+            board[diag2_r + k][diag2_c - k] = 3;
+        }
+    }
 
----
+    // Criação das matrizes de habilidades: cone, cruz e octaedro (losango)
+    // Cada matriz é 5x5, construída dinamicamente com loops aninhados e condicionais
+    // 1 indica área afetada, 0 não afetada
 
-## 🏅 Nível Aventureiro
+    // Matriz para habilidade Cone: forma de cone apontando para baixo, widening from top
+    int cone[SKILL_SIZE][SKILL_SIZE];
+    for (int i = 0; i < SKILL_SIZE; i++) { // Loop pelas linhas
+        for (int j = 0; j < SKILL_SIZE; j++) { // Loop pelas colunas
+            // Condicional: área afetada se j estiver no intervalo que se expande com i (do centro para as laterais)
+            if (j >= (SKILL_SIZE / 2 - i) && j <= (SKILL_SIZE / 2 + i)) {
+                cone[i][j] = 1;
+            } else {
+                cone[i][j] = 0;
+            }
+        }
+    }
 
-No nível Aventureiro, você expandirá o tabuleiro e adicionará mais navios, incluindo posicionamentos na diagonal.
+    // Matriz para habilidade Cruz: linhas e colunas centrais
+    int cross[SKILL_SIZE][SKILL_SIZE];
+    for (int i = 0; i < SKILL_SIZE; i++) {
+        for (int j = 0; j < SKILL_SIZE; j++) {
+            // Condicional: afetado se na linha central ou coluna central
+            if (i == SKILL_SIZE / 2 || j == SKILL_SIZE / 2) {
+                cross[i][j] = 1;
+            } else {
+                cross[i][j] = 0;
+            }
+        }
+    }
 
-### 🆕 Diferença em relação ao Nível Novato:
-- **Tabuleiro 10x10:** O tabuleiro será expandido para uma matriz 10x10.
-- **Posicionamento de Quatro Navios:** O sistema deverá posicionar quatro navios, incluindo dois na diagonal.
-- **Exibição Completa do Tabuleiro:** O sistema exibirá toda a matriz, onde 0 indica uma posição sem navio e 3 indica uma posição ocupada.
+    // Matriz para habilidade Octaedro (losango): distância de Manhattan <= raio
+    int octa[SKILL_SIZE][SKILL_SIZE];
+    for (int i = 0; i < SKILL_SIZE; i++) {
+        for (int j = 0; j < SKILL_SIZE; j++) {
+            // Condicional: afetado se |i - centro| + |j - centro| <= raio (SKILL_SIZE/2)
+            if (abs(i - SKILL_SIZE / 2) + abs(j - SKILL_SIZE / 2) <= SKILL_SIZE / 2) {
+                octa[i][j] = 1;
+            } else {
+                octa[i][j] = 0;
+            }
+        }
+    }
 
-### 🚩 Novas Funcionalidades:
-- **Matriz 10x10:** Implementação de uma matriz maior para representar o tabuleiro.
-- **Posicionamento de Navios na Diagonal:** Adição de navios posicionados diagonalmente.
-- **Exibição do Tabuleiro Completo:** O sistema mostrará o tabuleiro completo, indicando as posições ocupadas e livres.
+    // Integração das habilidades ao tabuleiro: sobreposição das áreas de efeito
+    // Para cada habilidade, define ponto de origem e sobrepõe, marcando com 5 se dentro dos limites
 
----
+    // Habilidade Cone: origem no topo (ponto superior central), posição board[4][4]
+    int cone_origin_row = 4;
+    int cone_origin_col = 4;
+    for (int di = 0; di < SKILL_SIZE; di++) { // Loop pelas linhas da matriz de habilidade
+        for (int dj = 0; dj < SKILL_SIZE; dj++) { // Loop pelas colunas
+            if (cone[di][dj] == 1) { // Apenas posições afetadas
+                // Calcula posição no tabuleiro: row aumenta para baixo, col ajustado do centro
+                int br = cone_origin_row + di;
+                int bc = cone_origin_col + (dj - SKILL_SIZE / 2);
+                // Condicional para verificar limites do tabuleiro
+                if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE) {
+                    board[br][bc] = 5; // Marca área afetada com 5 (sobrepõe navios ou água)
+                }
+            }
+        }
+    }
 
-## 🏅 Nível Mestre
+    // Habilidade Cruz: origem no centro, posição board[2][5]
+    int cross_origin_row = 2;
+    int cross_origin_col = 5;
+    for (int di = 0; di < SKILL_SIZE; di++) {
+        for (int dj = 0; dj < SKILL_SIZE; dj++) {
+            if (cross[di][dj] == 1) {
+                // Calcula posição: ajustado do centro da matriz
+                int br = cross_origin_row + (di - SKILL_SIZE / 2);
+                int bc = cross_origin_col + (dj - SKILL_SIZE / 2);
+                if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE) {
+                    board[br][bc] = 5;
+                }
+            }
+        }
+    }
 
-No nível Mestre, o desafio se intensifica com a implementação de habilidades especiais representadas por matrizes específicas no tabuleiro.
+    // Habilidade Octaedro: origem no centro, posição board[7][7]
+    int octa_origin_row = 7;
+    int octa_origin_col = 7;
+    for (int di = 0; di < SKILL_SIZE; di++) {
+        for (int dj = 0; dj < SKILL_SIZE; dj++) {
+            if (octa[di][dj] == 1) {
+                int br = octa_origin_row + (di - SKILL_SIZE / 2);
+                int bc = octa_origin_col + (dj - SKILL_SIZE / 2);
+                if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE) {
+                    board[br][bc] = 5;
+                }
+            }
+        }
+    }
 
-### 🆕 Diferença em relação ao Nível Aventureiro:
-- **Habilidades Especiais:** O sistema deve definir áreas de habilidades utilizando matrizes com padrões específicos: cone, cruz e octaedro.
-- **Estruturas de Repetição Aninhadas:** Utilização de loops aninhados para percorrer e preencher as áreas afetadas pelas habilidades.
+    // Exibição do tabuleiro: loops aninhados para imprimir a matriz com espaços para legibilidade
+    for (int i = 0; i < BOARD_SIZE; i++) { // Loop pelas linhas
+        for (int j = 0; j < BOARD_SIZE; j++) { // Loop pelas colunas
+            printf("%d ", board[i][j]); // Imprime valor (0: água, 3: navio, 5: área afetada)
+        }
+        printf("\n"); // Nova linha após cada linha do tabuleiro
+    }
 
-### 🚩 Novas Funcionalidades:
-- **Matrizes de Habilidades:** Implementação de três matrizes para representar habilidades especiais no tabuleiro.
-- **Padrões de Habilidade:** Criação de padrões específicos (cone, cruz, octaedro) para definir as áreas afetadas.
-- **Exibição das Áreas Atingidas:** O sistema exibirá o tabuleiro com as áreas afetadas, utilizando 0 para áreas não afetadas e 1 para áreas afetadas.
-
-### Exemplo de Saída:
-
-Exemplo e comando:
-printf("%d ",matriz[i][j]);
-
-### Exemplo de saída de habilidade em cone:
-
-0 0 1 0 0
-
-0 1 1 1 0
-
-1 1 1 1 1
-
-### Exemplo de saída de habilidade em octaedro:
-
-0 0 1 0 0
-
-0 1 1 1 0
-
-0 0 1 0 0
-
-### Exemplo de saída de habilidade em cruz:
-
-0 0 1 0 0
-
-1 1 1 1 1
-
-0 0 1 0 0
-
-
-
-
-
----
-
-## 📋 Requisitos Funcionais Comuns
-- **Entrada de Dados:** Os valores serão inseridos manualmente por meio de variáveis no código.
-- **Utilização de Matrizes:** Os dados devem ser estruturados de maneira eficiente utilizando matrizes.
-- **Exibição de Resultados:** Os resultados devem ser exibidos de forma clara e organizada.
-
-## 📌 Requisitos Não Funcionais Comuns
-- **Performance:** O sistema deve executar operações de forma eficiente, sem atrasos perceptíveis.
-- **Documentação:** O código deve ser bem documentado, com comentários claros sobre a função de cada parte do código.
-- **Manutenibilidade:** O código deve ser organizado e fácil de entender, facilitando futuras manutenções e expansões.
-
----
-
-Boa sorte no desenvolvimento deste desafio! Aproveite para aprimorar suas habilidades em vetores e matrizes enquanto progride pelos níveis.
-
-Equipe de Ensino - MateCheck
+    return 0; // Fim do programa
+}
